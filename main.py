@@ -55,14 +55,15 @@ def valid_subsets(candidates):
     for r in range(1, len(candidates) + 1):
         for subset in combinations(candidates, r):
             if not is_prefix(subset):
-                valid_subsets.append(set(sorted(subset)))
+                valid_subsets.append(subset)
     return valid_subsets
 
 
 valid_subsets = valid_subsets(candidate_codes)
 
 # print("valid subsets")
-# print(valid_subsets)
+print(valid_subsets)
+# print(len(valid_subsets))
 
 
 
@@ -134,8 +135,8 @@ valid_subsets = valid_subsets(candidate_codes)
 
 
 
-
-
+################################################################################
+'''
 def check_transform_condition(T, subset):
     if T == "":
         return True
@@ -152,30 +153,182 @@ def check_transform_condition(T, subset):
                 return True
     return False
 '''
+#################################### 
+
+
+
+
+'''
 def check_transform_condition(T, subset):
     if T == "":
         return True
-
-    subset = sorted(subset)
+    for code in subset:
+        if code not in T:
+            return False
+            
     for code in subset:
         if code in T:
-            if T.count(code) == 1:
-                new_subset = [x for x in subset if x != code]
-                new_T = T.replace(code, "")
-                if new_T == "" and new_subset:
-                    continue
-                if check_transform_condition(new_T, new_subset):
-                    return True
-            else:
-                new_T = T.replace(code, "", 1)
-                if new_T == "" and subset:
-                    continue
-                if check_transform_condition(new_T, subset):
-                    return True
-
+            # Create a new subset without modifying the original
+            new_subset = subset - {code}
+            T = T.replace(code, "")
+            if (T == "" and len(new_subset) != 0):
+                return False
+            # Check the remaining part of T
+            if check_transform_condition(T, new_subset):
+                return True
     return False
+'''
+
 
 '''
+
+def check_transform_condition(T, subset):
+    n = len(T)
+    m = 0
+    for code in subset:
+        m += len(code)
+        
+    if m > n: # All strings in a subset should be used
+        return False
+    
+    dp = [False] * (n + 1) # Store progress in an array
+    dp[n] = True  
+
+    used_strings = []
+    # Iterate backward through the string
+    for i in range(n - 1, -1, -1):
+        for code in subset:
+            if T[i:i + len(code)] == code:
+                dp[i] = dp[i + len(code)]
+                used_strings.append(code)
+                if dp[i]:
+                    break
+    
+    for string in subset:
+        if string not in used_strings:
+            return False
+    print(used_strings)
+    return dp[0]
+
+
+
+'''
+
+
+
+
+
+# def check_transform_condition(T, subset):
+#     n = len(T)
+#     m = 0
+#     for code in subset:
+#         m += len(code)
+        
+#     # All strings in a subset should be used
+#     if m > n: 
+#         return False
+    
+#     import numpy as np
+    
+#     store_progress = np.zeros(n)
+    
+#     smallest_index_1 = n*10000
+
+#     subset = sorted(subset)
+#     for i in range(n, -1, -1):
+#         # Check each code to avoid computing all the permutations
+#         for code in subset:
+#             if (i + len(code) > smallest_index_1):
+#                 for other in subset:
+#                     if len(other) >= len(code):
+#                         i = i - np.abs(i - len(code))        
+#                     else:
+#                         if T[i: i + len(other)] == other:
+#                             store_progress[i: i + len(other)] = 1
+#                             smallest_index_1 = i
+#             else:
+#                 if T[i: i + len(code)] == code:
+#                     store_progress[i: i + len(code)] = 1
+#                     smallest_index_1 = i
+
+    
+#     return store_progress.all()
+
+    
+    
+    
+    
+    
+    
+import numpy as np
+
+def check_transform_condition(T, subset):
+    n = len(T)
+
+    # Total length of all strings in the subset must not exceed T's length
+    if sum(len(code) for code in subset) > n:
+        return False
+
+    # Create a boolean array to track which positions in T are covered
+    store_progress = np.zeros(n, dtype=bool)
+
+    # Sort subset by length (shortest first) to minimize conflicts
+    subset = sorted(subset, key=len)
+    # Ensure all strings in the subset are used at least once
+    used_strings = set()
+
+    # Attempt to reconstruct T
+    for i in range(n):
+        # Skip already covered positions
+        if store_progress[i]:
+            continue
+
+        matched = False
+        for code in subset:
+            # Check if code matches T starting from index i and does not overlap
+            if i + len(code) <= n and not store_progress[i:i + len(code)].any():
+                if T[i:i + len(code)] == code:
+                    store_progress[i:i + len(code)] = True
+                    if code not in used_strings:
+                        used_strings.add(code)
+                    matched = True
+                    break
+
+        if not matched:
+            # If no valid match is found at the current position, return False
+            return False
+
+    # Check for gaps in coverage
+    # Gaps mean there are `0`s between `1`s in `store_progress`
+    gaps = np.diff(np.flatnonzero(store_progress))
+    if len(gaps) > 0 and any(gaps > 1):
+        return False
+    print(used_strings)
+
+    return store_progress.all() and (len(subset) == len(used_strings))
+
+
+    
+    
+    # for code in subset:
+    #     if code in T:
+    #         if T.count(code) == 1:
+    #             new_subset = [x for x in subset if x != code]
+    #             new_T = T.replace(code, "")
+    #             if new_T == "" and new_subset:
+    #                 return False
+    #             if check_transform_condition(new_T, new_subset):
+    #                 return True
+    #         else:
+    #             new_T = T.replace(code, "", 1)
+    #             if new_T == "" and subset:
+    #                 continue
+    #             if check_transform_condition(new_T, subset):
+    #                 return True
+
+    
+
+
 
 '''
 def check_transform_condition(T, subset):
@@ -244,7 +397,7 @@ def check_transform_condition(T, subset):
     return False  # Exhausted all possibilities without reducing T
 
 '''
-
+#[{'1', '0'}, {'1', '010'}, {'10', '0'}, {'010', '10'}]
 
 def store_subsets_with_transform(valid_subsets, T):
     valid_subsets_with_transform = []
