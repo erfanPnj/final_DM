@@ -23,8 +23,26 @@ def is_prefix(codes):
     return False
 
 
+def combinations(iterable, r):
+    pool = list(iterable)
+    n = len(pool)
+    if r > n:
+        return
+    indices = list(range(r))
+    yield tuple(pool[i] for i in indices)
+    while True:
+        for i in reversed(range(r)):
+            if indices[i] != i + n - r:
+                break
+        else:
+            return
+        indices[i] += 1
+        for j in range(i + 1, r):
+            indices[j] = indices[j - 1] + 1
+        yield tuple(pool[i] for i in indices)
+
+
 def valid_subsets(candidates):
-    from itertools import combinations
     valid_subsets = []
     candidates = list(candidates)
 
@@ -41,7 +59,7 @@ valid_subsets = valid_subsets(candidate_codes)
 def check_transform_condition(T, subset):
     n = len(T)
 
-    # Total length of all strings in the subset must not exceed T's length
+    # T should be bigger than sum of strings in subset
     if sum(len(code) for code in subset) > n:
         return False
 
