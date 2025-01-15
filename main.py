@@ -15,7 +15,6 @@ def generate_candidates(T):
 
 candidate_codes = generate_candidates(T)
 
-print(candidate_codes)
 
 def is_prefix(codes):
     sorted_codes = sorted(codes)
@@ -24,8 +23,6 @@ def is_prefix(codes):
             return True
     return False
 
-
-print(is_prefix(['01', '110']))
 
 def combinations(iterable, r):
     pool = list(iterable)
