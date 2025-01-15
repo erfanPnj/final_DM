@@ -15,6 +15,8 @@ def generate_candidates(T):
 
 candidate_codes = generate_candidates(T)
 
+print(candidate_codes)
+
 def is_prefix(codes):
     sorted_codes = sorted(codes)
     for i in range(len(sorted_codes) - 1):
@@ -22,6 +24,8 @@ def is_prefix(codes):
             return True
     return False
 
+
+print(is_prefix(['01', '110']))
 
 def combinations(iterable, r):
     pool = list(iterable)
@@ -74,7 +78,6 @@ def check_transform_condition(T, subset):
 
         matched = False
         for code in subset:
-            # Check if code matches T starting from index i and does not overlap
             if i + len(code) <= n and not store_progress[i:i + len(code)].any():
                 if T[i:i + len(code)] == code:
                     store_progress[i:i + len(code)] = True
@@ -87,7 +90,9 @@ def check_transform_condition(T, subset):
             return False
 
     # Check for gaps in coverage
-    # Gaps mean there are `0`s between `1`s in `store_progress`
+    ''' example: if T='0101', you cannot first match a '10' and then
+        match '0--1' with a '01'
+    '''
     gaps = np.diff(np.flatnonzero(store_progress))
     if len(gaps) > 0 and any(gaps > 1):
         return False
@@ -116,5 +121,5 @@ for subset in valid_with_transform:
         m *= (26-j)
     n += m
     
-print(n%1000000007)
+print(n)
 
