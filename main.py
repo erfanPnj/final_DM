@@ -1,4 +1,4 @@
-import numpy as np
+#import numpy as np
 
 T = input() # Binary String T
 
@@ -60,11 +60,11 @@ valid_subsets = valid_subsets(candidate_codes)
 def check_transform_condition(T, subset):
     n = len(T)
 
-    # T should be bigger than sum of strings in subset
+    # T should be bigger than the sum of lengths of strings in subset
     if sum(len(code) for code in subset) > n:
         return False
 
-    store_progress = np.zeros(n, dtype=bool)
+    store_progress = [False] * n
 
     subset = sorted(subset, key=len)
     used_strings = set()
@@ -75,9 +75,10 @@ def check_transform_condition(T, subset):
 
         matched = False
         for code in subset:
-            if i + len(code) <= n and not store_progress[i:i + len(code)].any():
+            if i + len(code) <= n and all(not store_progress[j] for j in range(i, i + len(code))):
                 if T[i:i + len(code)] == code:
-                    store_progress[i:i + len(code)] = True
+                    for j in range(i, i + len(code)):
+                        store_progress[j] = True
                     if code not in used_strings:
                         used_strings.add(code)
                     matched = True
@@ -85,17 +86,18 @@ def check_transform_condition(T, subset):
 
         if not matched:
             return False
-
-    # Check for gaps in coverage
+        
     ''' example: if T='0101', you cannot first match a '10' and then
         match '0--1' with a '01'
     '''
-    gaps = np.diff(np.flatnonzero(store_progress))
-    if len(gaps) > 0 and any(gaps > 1):
-        return False
+    last_index = -1
+    for i in range(n):
+        if store_progress[i]:
+            if last_index != -1 and i - last_index > 1:
+                return False
+            last_index = i
 
-    return store_progress.all() and (len(subset) == len(used_strings))
-
+    return all(store_progress) and (len(subset) == len(used_strings))
 
     
 def store_subsets_with_transform(valid_subsets, T):
